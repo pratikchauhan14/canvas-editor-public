@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Editor</title>
+  <meta name="robots" content="index, follow">
+
+  <!-- Basic Meta Tags -->
+  <meta name="description"
+    content="Pratik Chauhan - HubSpot CMS expert developer. We are a HubSpot CMS development agency offering custom themes, modules, and integrations. Contact us at pratik@2cube.studio.">
+  <meta name="keywords"
+    content="HubSpot CMS expert, HubSpot developer, HubSpot CMS development, HubSpot themes, HubSpot custom modules, HubSpot agency, Pratik Chauhan, 2cube studio">
+  <meta name="author" content="Pratik Chauhan">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Pratik Chauhan | HubSpot CMS Expert Development Agency">
+  <meta property="og:description"
+    content="We are HubSpot CMS experts specializing in theme and module development, integrations, and custom solutions.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://2cube.studio/">
+  <meta property="og:image" content="https://2cube.studio/og-image.jpg">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Pratik Chauhan | HubSpot CMS Expert Development Agency">
+  <meta name="twitter:description"
+    content="HubSpot CMS experts helping businesses with custom themes, modules, and integrations.">
+  <meta name="twitter:image" content="https://2cube.studio/og-image.jpg">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://2cube.studio/">
+
+  <!-- Contact / Business Info (optional for SEO + snippet enhancements) -->
+  <meta name="contact" content="pratik@2cube.studio">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "2cube Studio",
+          "url": "https://2cube.studio/",
+          "email": "pratik@2cube.studio",
+          "logo": "https://2cube.studio/logo.png",
+          "founder": {
+            "@type": "Person",
+            "name": "Pratik Chauhan",
+            "email": "pratik@2cube.studio"
+          },
+          "contactPoint": [{
+            "@type": "ContactPoint",
+            "email": "pratik@2cube.studio",
+            "contactType": "customer support",
+            "availableLanguage": ["English"],
+            "telephone": "+91-7698323303"
+          }],
+          "sameAs": [
+            "https://www.linkedin.com/in/pratik-chauhan",
+            "https://github.com/pratikchauhan14"
+          ],
+          "description": "We are a HubSpot CMS expert development agency specializing in custom themes, modules, and integrations."
+        },
+        {
+          "@type": "Person",
+          "name": "Pratik Chauhan",
+          "email": "pratik@2cube.studio",
+          "telephone": "+91-7698323303",
+          "url": "https://2cube.studio/",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "2cube Studio",
+            "url": "https://2cube.studio/"
+          },
+          "sameAs": [
+            "https://www.linkedin.com/in/pratik-chauhan",
+            "https://github.com/pratikchauhan14"
+          ]
+        }
+      ]
+    }
+    </script>
+
+
+  <style>
+#canvas-editor-container { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+.canvas-canvas-container { position: relative; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+.canvas--toolbar { display: flex; justify-content: center; align-items: center; padding: 8px; background-color: #ffffff; border-bottom: 1px solid #ddd; gap: 16px; }
+.canvas--controls, .canvas--undo-redo, .canvas--utility { display: flex; gap: 8px; }
+.canvas--toolbar div[id^="canvas-"], .canvas--toolbar div[id$="Button"] { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border: 1px solid transparent; border-radius: 4px; cursor: pointer; font-weight: bold; user-select: none; transition: background-color 0.2s, border-color 0.2s; }
+.canvas--toolbar div[id^="canvas-"]:hover, .canvas--toolbar div[id$="Button"]:hover { background-color: #e9ecef; }
+.canvas--toolbar div[id^="canvas-"].active { background-color: #0000001f; color: white; border-color: #0000002e; background-size: 28px; }
+.canvas--toolbar .disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+#canvas-colorpicker .dots { width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 0 4px 2px #00000057; }
+.canvas--colorpicker, .canvas--emojis { position: absolute; background: white; border: 1px solid #ccc; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border-radius: 6px; padding: 5px; display: flex; flex-wrap: wrap; gap: 5px; z-index: 1000; cursor: auto; }
+.canvas--colorpicker .color-button { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 1px solid #ddd; }
+div#canvas-emojii-wrapper { background: transparent !important; }
+.canvas--emojis button { padding: 0; font-size: 16px; border: none; background: transparent; margin: 0 3px; cursor: pointer; }
+
+.canvas--controls > div,
+.canvas--undo-redo > div,
+.canvas--utility > div ,
+div#canvas-emojii{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M5 6.41L6.41 5L17 15.59V9h2v10H9v-2h6.59L5 6.41Z'/%3E%3C/svg%3E");
+    background-image: var(--icon);
+    background-size: 24px 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-size: 0;
+}
+
+div#canvas-arrow{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='%23000000'%3E%3Cg fill='none' stroke='%23000000' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m9 9l6 6m0 0v-4.5m0 4.5h-4.5'/%3E%3Cpath d='M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z'/%3E%3C/g%3E%3C/svg%3E");
+
+}
+div#canvas-arrow{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='%23000000'%3E%3Cg fill='none' stroke='%23000000' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m9 9l6 6m0 0v-4.5m0 4.5h-4.5'/%3E%3Cpath d='M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z'/%3E%3C/g%3E%3C/svg%3E");
+
+}
+div#canvas-rectangle{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Crect width='18' height='18' x='3' y='3' fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' rx='2'/%3E%3C/svg%3E");
+}
+div#canvas-circle{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+div#canvas-uploadimage {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='%23000000'%3E%3Cg fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3E%3Cpath d='M6.5 8a2 2 0 1 0 4 0a2 2 0 0 0-4 0Zm14.427 1.99c-6.61-.908-12.31 4-11.927 10.51'/%3E%3Cpath d='M3 13.066c2.78-.385 5.275.958 6.624 3.1'/%3E%3Cpath d='M3 12c0-4.243 0-6.364 1.318-7.682C5.636 3 7.758 3 12 3c4.243 0 6.364 0 7.682 1.318C21 5.636 21 7.758 21 12c0 4.243 0 6.364-1.318 7.682C18.364 21 16.242 21 12 21c-4.243 0-6.364 0-7.682-1.318C3 18.364 3 16.242 3 12Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+div#canvas-pen {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M8.8 20.199A2.733 2.733 0 0 1 6.869 21H3v-3.844c0-.724.288-1.419.8-1.931m5 4.974l-5-4.974m5 4.974l9.974-9.978M3.8 15.225l9.984-9.995m0 0l1.426-1.428a2.733 2.733 0 0 1 3.867-.001l1.126 1.127a2.733 2.733 0 0 1 0 3.865l-1.428 1.428M13.783 5.23l4.991 4.991'/%3E%3C/svg%3E");
+}
+
+div#canvas-blur {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Ccircle cx='12' cy='12' r='9.25' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'/%3E%3Cpath fill='%23000000' d='M8.844 20.698a9.254 9.254 0 0 1 0-17.396a9.254 9.254 0 0 1 0 17.396'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+div#canvas-emojii {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 16 16'%3E%3Cpath fill='%23000000' d='M13 7a6 6 0 1 0-5.746 5.995A4.472 4.472 0 0 1 7.027 12H7a5 5 0 1 1 5-5v.027c.345.039.678.116.995.227C12.998 7.17 13 7.085 13 7Zm-5.888 3.498c.084-.368.212-.719.38-1.046a2.493 2.493 0 0 1-2.356-.785a.5.5 0 0 0-.745.666a3.493 3.493 0 0 0 2.72 1.165ZM6 6a.75.75 0 1 1-1.5 0A.75.75 0 0 1 6 6Zm2.75.75a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5ZM15 11.5a3.5 3.5 0 1 1-7 0a3.5 3.5 0 0 1 7 0Zm-3-2a.5.5 0 0 0-1 0V11H9.5a.5.5 0 0 0 0 1H11v1.5a.5.5 0 0 0 1 0V12h1.5a.5.5 0 0 0 0-1H12V9.5Z'/%3E%3C/svg%3E");
+}
+div#canvas-text {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m19.25 8.389l-.62-1.235A3 3 0 0 0 15.95 5.5h-7.9a3 3 0 0 0-2.68 1.654L4.75 8.39M12 5.5v13m0 0h-1.45m1.45 0h1.45'/%3E%3C/svg%3E");
+
+}
+
+div#undoButton {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='%23000000'%3E%3Cg fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M9 14L4 9l5-5'/%3E%3Cpath d='M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+div#redoButton {
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 512 512'%3E%3Cpath fill='%23000000' fill-rule='evenodd' d='M345.752 80.915L456.837 192L345.752 303.085l-30.17-30.17l59.527-59.541H202.646c-52.917 0-95.98 43.063-95.98 95.98s43.063 95.98 95.98 95.98h74.896V448h-74.896C126.188 448 64 385.812 64 309.354s62.188-138.646 138.646-138.646h172.547l-59.611-59.623z'/%3E%3C/svg%3E");
+}
+
+div#canvas-download{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='%23000000'%3E%3Cg id='feDownload0' fill='none' fill-rule='evenodd' stroke='none' stroke-width='1'%3E%3Cg id='feDownload1' fill='%23000000'%3E%3Cpath id='feDownload2' d='M5 19h14a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Zm8-5.825l3.243-3.242l1.414 1.414L12 17.004l-5.657-5.657l1.414-1.414L11 13.175V2h2v11.175Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+div#canvas-copy{
+    --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='%23000000'%3E%3Cg fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3E%3Cpath d='M16.75 5.75a3 3 0 0 0-3-3h-6.5a3 3 0 0 0-3 3v9.5a3 3 0 0 0 3 3h6.5a3 3 0 0 0 3-3z'/%3E%3Cpath d='M19.75 6.75v8.5a6 6 0 0 1-6 6h-5.5'/%3E%3C/g%3E%3C/svg%3E");
+}
+  </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900">
+  
+<div class="p-4 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-950 dark:text-white flex items-center justify-between bg-white">
+    <div class="flex items-center gap-4">
+        <h1 class="text-2xl font-bold">Canvas Editor</h1>
+    <div class="">
+        <label class=" flex gap-2 px-4 py-2 justify-center items-center  rounded-lg shadow-lg tracking-wide uppercase border border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-black hover:text-white">
+            <svg class="w-5 h-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z" />
+            </svg>
+            <span class="font-bold text-xs leading-normal">Select a file</span>
+            <input id="fileInput" type='file' class="hidden" accept="image/*" />
+        </label>
+    </div>
+    </div>
+  
+    <div class="flex items-center gap-4">
+        <!-- Contact us -->
+        <a href="mailto:pratik@2cube.studio" class="text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-white dark:hover:text-white">Contact us</a>
+        <!-- GitHub -->
+        <a href="https://2cube.studio" target="_blank" class="
+        px-4 py-2 dark:bg-gray-800 dark:text-white text-xs font-medium rounded-md border border-gray-300 dark:border-gray-700
+        hover:bg-gray-700 hover:text-white dark:hover:bg-gray-700 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-700
+        transition-colors font-bold
+        ">2CUBE Studio</a>
+    </div>
+  </div>
+
+  <img style="display: none;" class="img" src="./image007.png">
+  <script src="./bundle.js"></script>
+  <script type="text/javascript">
+    const img = document.querySelector("img");
+
+    let imageEditor;
+
+    fetch(img.src)
+      .then(response => response.blob())
+      .then(blob => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }))
+      .then(base64 => {
+        imageEditor = new ImageEditor(base64);
+      })
+      .catch(error => console.error('Error fetching and converting image:', error));
+
+    // fileInput 
+    const fileInput = document.getElementById("fileInput");
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        imageEditor.distroy();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result;
+          imageEditor = new ImageEditor(base64);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+
+</html>
