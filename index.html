@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Studio — Browser Image Markup &amp; Annotation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            geist: {
+              bg: '#FAFAFA',
+              darkBg: '#000000',
+              darkSurface: '#0A0A0A',
+              darkCard: '#111111',
+              borderLight: '#EAEAEA',
+              borderDark: '#262626',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="style.css" rel="stylesheet">
+  <style>
+    /* Subtle Vercel-style architectural dot grid for canvas backdrop */
+    .canvas-dot-grid {
+      background-image: radial-gradient(#d4d4d8 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .dark .canvas-dot-grid {
+      background-image: radial-gradient(#27272a 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+
+  <!-- SEO & Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://www.pratikchauhan.dev/canvas-editor/#webapp",
+        "name": "Canvas Studio — Browser Image Markup & Annotation",
+        "url": "https://www.pratikchauhan.dev/",
+        "description": "A high-performance client-side image annotation tool and canvas editor built with JavaScript & TypeScript. Annotate, redact, draw shapes, and export directly from the browser with zero server uploads.",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas support.",
+        "creator": {
+          "@type": "Person",
+          "@id": "https://www.pratikchauhan.dev/#person",
+          "name": "Pratik Chauhan",
+          "url": "https://www.pratikchauhan.dev/",
+          "sameAs": [
+            "https://www.pratikchauhan.dev/about",
+            "https://github.com/pratikchauhan14/",
+            "https://x.com/pratikchauhancp",
+            "https://www.linkedin.com/in/pratik-chauhan-cp/"
+          ]
+        }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://www.pratikchauhan.dev/#person",
+        "name": "Pratik Chauhan",
+        "jobTitle": "Independent Web Developer & Digital Solutions Partner",
+        "url": "https://www.pratikchauhan.dev/",
+        "sameAs": [
+          "https://www.pratikchauhan.dev/about",
+          "https://www.pratikchauhan.dev/blog",
+          "https://github.com/pratikchauhan14/",
+          "https://x.com/pratikchauhancp",
+          "https://www.linkedin.com/in/pratik-chauhan-cp/"
+        ],
+        "knowsAbout": ["JavaScript", "TypeScript", "HTML5 Canvas", "Web Development", "Astro", "UI/UX Engineering"]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.pratikchauhan.dev/canvas-editor/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is my uploaded image sent to an external server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All image processing, canvas drawing, and transformations run 100% locally in your browser using the HTML5 Canvas API and Web APIs. Your images and annotations never leave your device."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What annotation tools are available in Canvas Studio?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Canvas Studio supports dynamic directional arrows, bounding box rectangles, circles, freehand pen drawing, sensitive area blurring/pixelation, text callouts, emoji stamps, image overlays, and full undo/redo history stacks."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I mount Canvas Studio inside any custom HTML element or div?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Canvas Studio accepts a target DOM element container parameter (e.g., ImageEditor(base64, renderArea)), allowing it to mount seamlessly into custom modals, sidebars, or embedded page widgets."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Who created Canvas Studio?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Canvas Studio is created and maintained by Pratik Chauhan, an independent web developer and digital solution partner who specializes in building modern web apps, performant tools, and digital experiences."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export or copy annotations to the clipboard?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. You can export the annotated canvas directly as an image download or copy it directly to your system clipboard for quick pasting into Slack, GitHub issues, or documentation."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+
+<body
+  class="bg-white dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200 overflow-x-hidden">
+
+  <header
+    class="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+
+      <div class="flex items-center gap-3">
+        <a href="#" class="flex items-center gap-2.5 group">
+          <div
+            class="w-7 h-7 rounded-md bg-zinc-950 dark:bg-white text-white dark:text-black flex items-center justify-center transition-transform duration-150 group-hover:scale-105">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 19.7778H22L12 2Z" />
+            </svg>
+          </div>
+          <span class="font-semibold text-[15px] tracking-tight text-zinc-950 dark:text-white">
+            Canvas Studio
+          </span>
+        </a>
+        <span
+          class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
+          v1.0
+        </span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-6 text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
+        <a href="#workspace" class="hover:text-zinc-950 dark:hover:text-white transition-colors">Workspace</a>
+        <a href="#features" class="hover:text-zinc-950 dark:hover:text-white transition-colors">Features</a>
+        <a href="#faq" class="hover:text-zinc-950 dark:hover:text-white transition-colors">FAQ</a>
+        <a href="#about-creator" class="hover:text-zinc-950 dark:hover:text-white transition-colors">About</a>
+        <a href="https://www.pratikchauhan.dev/blog" target="_blank" rel="noopener noreferrer"
+          class="hover:text-zinc-950 dark:hover:text-white transition-colors">Blog</a>
+      </nav>
+
+      <div class="flex items-center gap-2.5">
+        <button id="theme-toggle-header" type="button" aria-label="Toggle Light and Dark Mode"
+          class="p-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer">
+          <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path stroke-linecap="round"
+              d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41">
+            </path>
+          </svg>
+          <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+        </button>
+        <a href="https://github.com/pratikchauhan14/" target="_blank" rel="noopener noreferrer"
+          class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-950 dark:hover:text-white transition-colors">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+          </svg>
+          <span>Source</span>
+        </a>
+        <a href="#workspace"
+          class="inline-flex items-center px-3.5 py-1.5 rounded-md text-[13px] font-medium bg-zinc-950 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
+          Launch Editor
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <section class="relative pt-16 pb-12 sm:pt-24 sm:pb-16 px-4 sm:px-6 max-w-5xl mx-auto text-center">
+    <div
+      class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-[12px] font-medium text-zinc-600 dark:text-zinc-400 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+      <span>Independent Web Developer Showcase — JavaScript &amp; TypeScript</span>
+    </div>
+
+    <h1 class="text-4xl sm:text-6xl font-bold tracking-[-0.035em] text-zinc-950 dark:text-white leading-[1.08]">
+      Annotate, redact, and ship.<br class="hidden sm:inline"> Zero server uploads.
+    </h1>
+
+    <p class="mt-5 text-[16px] sm:text-[18px] text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+      A lightweight HTML5 Canvas image editor built from scratch to explore modern JavaScript and TypeScript. Draw
+      vectors, blur sensitive details, overlay images, and export directly to your clipboard.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <a href="#workspace"
+        class="px-5 py-2.5 rounded-md bg-zinc-950 dark:bg-white text-white dark:text-black text-[14px] font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
+        Start Editing Below
+      </a>
+      <a href="https://www.pratikchauhan.dev/" target="_blank" rel="noopener noreferrer"
+        class="px-5 py-2.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 text-[14px] font-medium hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+        Developer Portfolio
+      </a>
+      <label class=" flex gap-2 px-4 py-2 justify-center items-center  rounded-lg shadow-lg tracking-wide uppercase border border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-black hover:text-white">
+            <svg class="w-5 h-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z"></path>
+            </svg>
+            <span class="font-bold text-xs leading-normal">Select a file</span>
+            <input id="fileInput" type="file" class="hidden" accept="image/*">
+        </label>
+    </div>
+  </section>
+
+  
+  <section id="workspace" class="px-4 sm:px-6 max-w-6xl mx-auto mb-24 scroll-mt-20">
+    <input id="fileInput" type="file" class="hidden" accept="image/*">
+
+    <div
+      class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
+
+      
+
+      <div id="canvas-demo-mount"
+        class="relative w-full min-h-[500px] sm:min-h-[580px] canvas-dot-grid flex items-center justify-center overflow-auto">
+
+        <img style="display: none;" class="img" src="./image007.png">
+        <!-- Default Canvas Element with Preloaded Sample Image -->
+        <div id="default-canvas-wrapper" class="relative max-w-full flex flex-col items-center justify-center">
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+  <section id="features" class="px-4 sm:px-6 max-w-6xl mx-auto pb-24 scroll-mt-20">
+    <div class="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <p class="text-[12px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
+          Capabilities
+        </p>
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+          11 tools engineered for speed.
+        </h2>
+      </div>
+      <p class="text-[14px] text-zinc-600 dark:text-zinc-400 max-w-md">
+        Every annotation primitive runs client-side with zero external dependencies.
+      </p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-zinc-200 dark:border-zinc-800">
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Arrow Draw</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Draw crisp directional vectors to point
+          out UI states, bugs, or key details.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="4" y="6" width="16" height="12" rx="1.5" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Rectangle Draw</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Frame sections, components, or code
+          snippets with clean rectangular outlines.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Circle Draw</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Highlight buttons, badges, and focal
+          areas with smooth circular strokes.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Add Image — Scale, Zoom &amp; Delete
+        </h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Import local images via <code
+            class="font-mono text-[11px]">#fileInput</code> and scale, zoom, or delete layers freely.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Sensitive Info Blur</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Redact API keys, email addresses, and
+          personal data before publishing screenshots.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8.5 14.5s1.25 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Add Emoji</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Drop expressive emoji stamps anywhere on
+          the canvas to convey quick feedback.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M12 6v13M9 19h6" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Text Write</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Write clean typography callouts and
+          inline notes directly onto your canvas.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15 11.25l1.5 1.5.75-.75V8.758l2.276-.61a3 3 0 10-3.675-3.675l-.61 2.277H12l-.75.75 1.5 1.5M15 11.25l-8.47 8.47c-.34.34-.8.53-1.28.53s-.94.19-1.28.53l-.97.97-.75-.75.97-.97c.34-.34.53-.8.53-1.28s.19-.94.53-1.28L12.75 9M15 11.25L12.75 9" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Color Selecting Tool</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Pick custom stroke and fill colors for
+          shapes, arrows, and text labels.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Undo &amp; Redo</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Full state stack history letting you
+          step backward and forward effortlessly.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Download Local Image</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">Export your finished composition
+          directly to disk as a crisp image file.</p>
+      </div>
+      <div
+        class="p-6 border-r border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50/80 dark:hover:bg-zinc-950 transition-colors sm:col-span-2 lg:col-span-2">
+        <div class="text-zinc-950 dark:text-white mb-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+          </svg>
+        </div>
+        <h3 class="text-[15px] font-semibold text-zinc-950 dark:text-white mb-1">Copy to Clipboard</h3>
+        <p class="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">Copy the rendered canvas image
+          directly into your OS clipboard for instant pasting into GitHub issues, Slack, or docs.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="py-16 sm:py-24 px-4 sm:px-6 max-w-5xl mx-auto border-t border-zinc-200 dark:border-zinc-800">
+    <div class="max-w-2xl mb-12">
+      <div
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 mb-3">
+        Knowledge Base
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+        Frequently Asked Questions
+      </h2>
+      <p class="mt-2 text-[14px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        Everything you need to know about Canvas Studio's architecture, privacy, tool stack, and integration.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <details class="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 p-5 [&_summary::-webkit-details-marker]:hidden transition-all duration-200">
+        <summary class="flex cursor-pointer items-center justify-between text-zinc-950 dark:text-white font-medium text-[15px]">
+          <span>Is my image or data sent to any remote server?</span>
+          <span class="ml-4 shrink-0 transition duration-200 group-open:-rotate-180 text-zinc-500">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
+        </summary>
+        <p class="mt-3 text-[14px] leading-relaxed text-zinc-600 dark:text-zinc-400">
+          No. All image operations, pixel transformations, redactions, and canvas drawings occur strictly in-memory within your browser using standard HTML5 Canvas and Web APIs. Nothing is transmitted over the network or stored on remote cloud infrastructure.
+        </p>
+      </details>
+
+      <details class="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 p-5 [&_summary::-webkit-details-marker]:hidden transition-all duration-200">
+        <summary class="flex cursor-pointer items-center justify-between text-zinc-950 dark:text-white font-medium text-[15px]">
+          <span>Can I embed or mount Canvas Studio inside a custom div or modal?</span>
+          <span class="ml-4 shrink-0 transition duration-200 group-open:-rotate-180 text-zinc-500">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
+        </summary>
+        <p class="mt-3 text-[14px] leading-relaxed text-zinc-600 dark:text-zinc-400">
+          Yes! The editor is modular and accepts a target container element parameter (<code class="font-mono text-[13px] text-zinc-900 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">new ImageEditor(base64, renderArea)</code>). It appends cleanly to your targeted wrapper rather than polluting or forcing attachment to <code class="font-mono text-[13px] text-zinc-900 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">document.body</code>.
+        </p>
+      </details>
+
+      <details class="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 p-5 [&_summary::-webkit-details-marker]:hidden transition-all duration-200">
+        <summary class="flex cursor-pointer items-center justify-between text-zinc-950 dark:text-white font-medium text-[15px]">
+          <span>What annotation tools and controls are included?</span>
+          <span class="ml-4 shrink-0 transition duration-200 group-open:-rotate-180 text-zinc-500">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
+        </summary>
+        <p class="mt-3 text-[14px] leading-relaxed text-zinc-600 dark:text-zinc-400">
+          You get directional arrows, geometric shapes (rectangles and circles), freehand pen markup, sensitive area blur/pixelation, emoji stamps, inline text typing, external image overlays, color customization, and full undo/redo state history with keyboard shortcuts.
+        </p>
+      </details>
+
+      <details class="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 p-5 [&_summary::-webkit-details-marker]:hidden transition-all duration-200">
+        <summary class="flex cursor-pointer items-center justify-between text-zinc-950 dark:text-white font-medium text-[15px]">
+          <span>Can I copy directly to the system clipboard?</span>
+          <span class="ml-4 shrink-0 transition duration-200 group-open:-rotate-180 text-zinc-500">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
+        </summary>
+        <p class="mt-3 text-[14px] leading-relaxed text-zinc-600 dark:text-zinc-400">
+          Yes, via the modern Async Clipboard API (<code class="font-mono text-[13px] text-zinc-900 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">navigator.clipboard.write</code>). Click copy or hit shortcut <kbd class="px-1.5 py-0.5 text-[11px] font-mono border border-zinc-300 dark:border-zinc-700 rounded bg-zinc-100 dark:bg-zinc-800">C</kbd>, and paste directly into Slack, GitHub issues, Figma, or Jira.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Creator & About Section -->
+  <section id="about-creator" class="py-16 sm:py-24 px-4 sm:px-6 bg-zinc-50/70 dark:bg-zinc-950/40 border-t border-zinc-200 dark:border-zinc-800">
+    <div class="max-w-5xl mx-auto">
+      <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black p-8 sm:p-12 relative overflow-hidden">
+        <div class="absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 rounded-full bg-gradient-to-br from-zinc-200 to-transparent dark:from-zinc-800 dark:to-transparent opacity-50 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div class="max-w-2xl">
+            <div
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 mb-4">
+              Created By
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
+              Pratik Chauhan
+            </h2>
+            <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-1">
+              Independent Web Developer &amp; Digital Solutions Partner
+            </p>
+            <p class="mt-4 text-[14px] sm:text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300">
+              I build focused digital solutions, performant web platforms, and browser-first tools. Driven by clean software craftsmanship, I explore modern JavaScript, TypeScript, and minimalist web frameworks like Astro to ship clean, fast, and delightful software.
+            </p>
+
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+              <a href="https://www.pratikchauhan.dev/about" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-medium bg-zinc-950 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
+                <span>Read Full Story</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                </svg>
+              </a>
+              <a href="https://www.pratikchauhan.dev/" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-medium border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+                pratikchauhan.dev
+              </a>
+              <a href="https://www.pratikchauhan.dev/blog" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-medium border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+                Engineering Notes
+              </a>
+            </div>
+          </div>
+
+          <div class="w-full md:w-auto flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+            <a href="https://github.com/pratikchauhan14/" target="_blank" rel="noopener noreferrer"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+              <svg class="w-5 h-5 text-zinc-800 dark:text-zinc-200" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+              </svg>
+              <div>
+                <div class="text-[13px] font-semibold text-zinc-950 dark:text-white">GitHub</div>
+                <div class="text-[11px] text-zinc-500">@pratikchauhan14</div>
+              </div>
+            </a>
+
+            <a href="https://x.com/pratikchauhancp" target="_blank" rel="noopener noreferrer"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+              <svg class="w-5 h-5 text-zinc-800 dark:text-zinc-200" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              <div>
+                <div class="text-[13px] font-semibold text-zinc-950 dark:text-white">X / Twitter</div>
+                <div class="text-[11px] text-zinc-500">@pratikchauhancp</div>
+              </div>
+            </a>
+
+            <a href="https://www.linkedin.com/in/pratik-chauhan-cp/" target="_blank" rel="noopener noreferrer"
+              class="flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+              <svg class="w-5 h-5 text-zinc-800 dark:text-zinc-200" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+              </svg>
+              <div>
+                <div class="text-[13px] font-semibold text-zinc-950 dark:text-white">LinkedIn</div>
+                <div class="text-[11px] text-zinc-500">pratik-chauhan-cp</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 py-12 px-4 sm:px-6">
+    <div class="max-w-6xl mx-auto flex flex-col gap-8">
+
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="w-6 h-6 rounded bg-zinc-950 dark:bg-white text-white dark:text-black flex items-center justify-center">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 19.7778H22L12 2Z" />
+            </svg>
+          </div>
+          <span class="font-semibold text-[14px] text-zinc-950 dark:text-white">Canvas Studio</span>
+          <span class="text-[13px] text-zinc-500 dark:text-zinc-400">— An independent web developer showcase</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button id="theme-toggle-footer" type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer">
+            <span class="dark:hidden">Switch to Dark</span>
+            <span class="hidden dark:inline">Switch to Light</span>
+          </button>
+          <a href="https://www.pratikchauhan.dev/" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px] font-medium border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+            <span>Visit Portfolio</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+            </svg>
+          </a>
+          <a href="#workspace"
+            class="inline-flex items-center px-3 py-1.5 rounded-md text-[12px] font-medium bg-zinc-950 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors">
+            Back to Editor
+          </a>
+        </div>
+      </div>
+
+      <div
+        class="pt-6 border-t border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[13px] text-zinc-500 dark:text-zinc-400">
+        <p>
+          Built by <a href="https://www.pratikchauhan.dev/" target="_blank" rel="noopener noreferrer"
+            class="font-medium text-zinc-900 dark:text-zinc-200 hover:underline">Pratik Chauhan</a> — Independent web
+          developer exploring JavaScript &amp; TypeScript.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-5">
+          <a href="https://www.pratikchauhan.dev/" target="_blank" rel="noopener noreferrer"
+            class="hover:text-zinc-950 dark:hover:text-white transition-colors">Website</a>
+          <a href="https://www.pratikchauhan.dev/blog" target="_blank" rel="noopener noreferrer"
+            class="hover:text-zinc-950 dark:hover:text-white transition-colors">Blog</a>
+          <a href="https://www.pratikchauhan.dev/about" target="_blank" rel="noopener noreferrer"
+            class="hover:text-zinc-950 dark:hover:text-white transition-colors">About</a>
+          <a href="https://x.com/pratikchauhancp" target="_blank" rel="noopener noreferrer"
+            class="hover:text-zinc-950 dark:hover:text-white transition-colors">X</a>
+          <a href="https://www.linkedin.com/in/pratik-chauhan-cp/" target="_blank" rel="noopener noreferrer"
+            class="hover:text-zinc-950 dark:hover:text-white transition-colors">LinkedIn</a>
+          <a href="https://github.com/pratikchauhan14/" target="_blank" rel="noopener noreferrer"
+            class="hover:text-zinc-950 dark:hover:text-white transition-colors">GitHub</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const htmlEl = document.documentElement;
+      const headerToggle = document.getElementById('theme-toggle-header');
+      const footerToggle = document.getElementById('theme-toggle-footer');
+
+      // Initialize theme from localStorage or system preference
+      const savedTheme = localStorage.getItem('canvas-studio-theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        htmlEl.classList.add('dark');
+      }
+
+      const toggleTheme = () => {
+        htmlEl.classList.toggle('dark');
+        const isDark = htmlEl.classList.contains('dark');
+        localStorage.setItem('canvas-studio-theme', isDark ? 'dark' : 'light');
+        drawDefaultSampleImage();
+      };
+
+      if (headerToggle) headerToggle.addEventListener('click', toggleTheme);
+      if (footerToggle) footerToggle.addEventListener('click', toggleTheme);
+
+
+    });
+  </script>
+
+
+
+
+  <script src="./bundle.js"></script>
+  <script type="text/javascript">
+    const img = document.querySelector("img");
+    const renderArea = document.getElementById("canvas-demo-mount");
+
+    let imageEditor;
+
+    fetch(img.src)
+      .then(response => response.blob())
+      .then(blob => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }))
+      .then(base64 => {
+        imageEditor = new ImageEditor(base64,renderArea);
+      })
+      .catch(error => console.error('Error fetching and converting image:', error));
+
+    // fileInput 
+    const fileInput = document.getElementById("fileInput");
+    
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        imageEditor.distroy();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result;
+          imageEditor = new ImageEditor(base64,renderArea);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+</body>
+
+</html>
